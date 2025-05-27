@@ -1,0 +1,8 @@
+{
+  "movieName": "Inception",
+  "duration": 148,
+  "releaseYear": 2010,
+  "genre": "Sci-Fi",
+  "description": "A skilled thief, the absolute best in the dangerous art of extraction, steals valuable secrets from deep within the subconscious during the dream state.",
+  "director": "Christopher Nolan"
+}

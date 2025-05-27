@@ -37,3 +37,30 @@ export const allMovies=async(req,res)=>{
     res.status(500).json({message:"Internal server error in getting error"})
   }
 }
+
+export const myMovies=async(req,res)=>{
+  try{
+    const myMoviesExist=await movie.find({ownerId:req.body._id})
+    res.send(myMoviesExist)
+  }catch(err){
+    return res.status(500).json({message:"Internal server error in myMovies"})
+  }
+}
+
+export const deleteMovies=async(req,res)=>{
+  const {movieId}=req.params
+  try{
+    const myMoviesExist=await movie.findById(movieId)
+    if(!myMoviesExist){
+      return res.status(404).json({message:"Movie not exist"})
+    }
+    if(myMoviesExist.ownerId==req.body._id){
+      await movie.deleteOne({_id:movieId})
+      return res.status(200).json({message:"Movie deleted sucessfully"})
+    }
+    return res.status(403).json({message:"You can delete only your Movies"})
+  }catch(err){
+    console.log(err);
+    return res.status(500).json({message:"Internal server error in deleteMovies"})
+  }
+}
