@@ -35,7 +35,7 @@ export const login=async(req,res)=>{
         }
         const passwordMatch=await argon2.verify(userExist.password,password)
         if(passwordMatch){
-            const token=jwt.sign({username:userExist.username,email:userExist.email},"vijaynimar",{expiresIn:"2days"})
+            const token=jwt.sign({username:userExist.username,email:userExist.email,_id:userExist._id},"vijaynimar",{expiresIn:"2days"})
             res.status(200).json({token:token})
         }
     }catch(err){
