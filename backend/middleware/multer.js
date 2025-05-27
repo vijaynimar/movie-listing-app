@@ -1,6 +1,5 @@
 import multer from "multer";
 import path from "path";
-import "dotenv/config"
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
