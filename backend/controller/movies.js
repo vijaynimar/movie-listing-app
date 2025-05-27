@@ -30,6 +30,7 @@ export const addMovie=async(req,res)=>{
 }
 
 export const allMovies=async(req,res)=>{
+  console.log(req.header.authorization);
   try{
     const allMovies=await movie.find()
     res.status(200).json({message:allMovies})

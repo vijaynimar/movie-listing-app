@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken"
 export const tokenVerify=async(req,res,next)=>{
     const token=req.headers.authorization
     try{
+        console.log(token);
         const decodedToken=jwt.verify(token,"vijaynimar")
+        console.log(decodedToken);
         if(!decodedToken){
             return res.status(403).json({message:"user not verified"})
         }

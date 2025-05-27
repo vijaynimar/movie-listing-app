@@ -11,9 +11,8 @@ userRouter.get("/",(req,res)=>{
 
 userRouter.post("/signIn",checkPassword,signInUser)
 userRouter.post("/login",login)
-userRouter.use(tokenVerify)
-userRouter.post("/addMovie",addMovie)
+userRouter.post("/addMovie",tokenVerify,addMovie)
 userRouter.get("/allMovies",allMovies)
-userRouter.get("/myMovies",myMovies)
-userRouter.delete("/deleteMymovie/:movieId",deleteMovies)
+userRouter.get("/myMovies",tokenVerify,myMovies)
+userRouter.delete("/deleteMymovie/:movieId",tokenVerify,deleteMovies)
 export {userRouter}
