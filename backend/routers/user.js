@@ -10,7 +10,7 @@ userRouter.get("/",(req,res)=>{
 })
 
 userRouter.post("/signIn",checkPassword,signInUser)
-userRouter.post("/login",tokenVerify,login)
+userRouter.post("/login",login)
 userRouter.use(tokenVerify)
 userRouter.post("/addMovie",addMovie)
 userRouter.get("/allMovies",allMovies)

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    /* Navbar */
+    .navbar {
+      background-color: #333;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .navbar h2 {
+      margin: 0;
+    }
+
+    .navbar .nav-buttons button {
+      margin-left: 10px;
+      padding: 10px 15px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .navbar .nav-buttons button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Movie List */
+    .movies-container {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .movie-card {
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .movie-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .movie-card h3 {
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    .movie-card p {
+      font-size: 14px;
+      color: #555;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h2>Movie Dashboard</h2>
+    <div class="nav-buttons">
+      <button id="uploadBtn">Upload Movie</button>
+      <button id="myMoviesBtn">My Movies</button>
+    </div>
+  </div>
+
+  <div class="movies-container" id="moviesContainer">
+    <!-- Movies will be displayed here -->
+  </div>
+
+  <script>
+    // Navigation buttons
+    document.getElementById("uploadBtn").addEventListener("click", () => {
+      window.location.href = "upload.html"; // adjust path if needed
+    });
+
+    document.getElementById("myMoviesBtn").addEventListener("click", () => {
+      window.location.href = "my-movies.html"; // adjust path if needed
+    });
+
+    // Fetch and display movies
+    async function fetchMovies() {
+      try {
+        const response = await fetch("http://localhost:2000/allMovies");
+        const movies = await response.json();
+
+        const container = document.getElementById("moviesContainer");
+        container.innerHTML = "";
+
+        movies.forEach(movie => {
+          const card = document.createElement("div");
+          card.className = "movie-card";
+
+          card.innerHTML = `
+            <img src="${movie.Image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="Movie Poster" />
+            <h3>${movie.movieName}</h3>
+            <p><strong>Director:</strong> ${movie.director}</p>
+            <p><strong>Genre:</strong> ${movie.genre || 'N/A'}</p>
+            <p><strong>Release Year:</strong> ${movie.releaseYear || 'N/A'}</p>
+            <p><strong>Duration:</strong> ${movie.duration || 'N/A'} mins</p>
+            <p>${movie.description || ''}</p>
+          `;
+
+          container.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error("Error fetching movies:", error);
+        document.getElementById("moviesContainer").innerHTML = "<p>Failed to load movies.</p>";
+      }
+    }
+
+    fetchMovies();
+  </script>
+
+</body>
+</html>

@@ -3,6 +3,7 @@ import { user } from "../models/user.js"
 import jwt from "jsonwebtoken"
 export const signInUser=async (req,res)=>{
     const {username,email,password}=req.body
+    console.log("6");
     if(!username && !email && !password){
         res.status(401).json({message:"required all fields"})
     }
