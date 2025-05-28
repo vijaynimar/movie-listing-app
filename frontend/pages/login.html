@@ -79,7 +79,7 @@
 
     // 🔄 Redirect to signup page
     signUpBtn.addEventListener("click", () => {
-      window.location.href = "../signIn.html";  // adjust path if needed
+      window.location.href = "../index.html";  // adjust path if needed
     });
 
     form.addEventListener("submit", async function (e) {
@@ -90,7 +90,7 @@
       const password = document.getElementById("password").value;
 
       try {
-        const res = await fetch("http://localhost:2000/login", {
+        const res = await fetch("https://movie-listing-app-mv76.onrender.com/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),

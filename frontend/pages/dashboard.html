@@ -16,6 +16,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
     nav h2 {
       margin: 0;
@@ -23,12 +24,18 @@
     nav .nav-buttons {
       display: flex;
       gap: 10px;
+      align-items: center;
+    }
+    nav .nav-buttons button,
+    nav .nav-buttons select,
+    nav .nav-buttons input {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: none;
+      font-size: 14px;
     }
     nav .nav-buttons button {
-      padding: 10px 15px;
       background-color: #28a745;
-      border: none;
-      border-radius: 4px;
       color: white;
       cursor: pointer;
     }
@@ -40,7 +47,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       padding: 20px;
-      max-height: 700px; /* enough for 2 rows approx */
+      max-height: 700px;
       overflow-y: auto;
       background: white;
       margin: 20px;
@@ -56,6 +63,11 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .movie-card:hover {
+      transform: scale(1.02);
     }
     .movie-card img {
       width: 100%;
@@ -72,6 +84,46 @@
       font-size: 14px;
       color: #555;
     }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .modal-content h2 {
+      margin-top: 0;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #333;
+    }
+    .modal img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -79,12 +131,26 @@
   <nav>
     <h2>Movie Dashboard</h2>
     <div class="nav-buttons">
+      <input type="text" id="searchInput" placeholder="Search by name..." />
+      <select id="sortBy">
+        <option value="">Sort By</option>
+        <option value="duration">Duration (Low to High)</option>
+        <option value="releaseYear">Release Year (Newest First)</option>
+      </select>
       <button id="uploadBtn">Upload Movie</button>
       <button id="myMoviesBtn">My Movies</button>
     </div>
   </nav>
 
   <div id="moviesContainer"></div>
+
+  <!-- Movie Detail Modal -->
+  <div class="modal" id="movieModal">
+    <div class="modal-content" id="modalContent">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <!-- Content filled by JS -->
+    </div>
+  </div>
 
   <script>
     const token = localStorage.getItem("token");
@@ -93,44 +159,21 @@
       window.location.href = "login.html";
     }
 
+    let allMovies = [];
+
     async function fetchMovies() {
       try {
-        const res = await fetch("http://localhost:2000/allMovies", {
+        const res = await fetch("https://movie-listing-app-mv76.onrender.com/allMovies", {
           headers: {
             "Authorization": token
           }
         });
 
-        if (!res.ok) {
-          throw new Error("Unauthorized or error fetching movies");
-        }
+        if (!res.ok) throw new Error("Unauthorized or error fetching movies");
 
         const data = await res.json();
-        const movies = Array.isArray(data) ? data : data.message;
-
-        const container = document.getElementById("moviesContainer");
-        container.innerHTML = "";
-
-        if (!movies || movies.length === 0) {
-          container.innerHTML = "<p>No movies found.</p>";
-          return;
-        }
-
-        movies.forEach(movie => {
-          const card = document.createElement("div");
-          card.className = "movie-card";
-          card.innerHTML = `
-            <img src="${movie.Image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="Movie Poster" />
-            <h3>${movie.movieName}</h3>
-            <p><strong>Director:</strong> ${movie.director}</p>
-            <p><strong>Genre:</strong> ${movie.genre || 'N/A'}</p>
-            <p><strong>Year:</strong> ${movie.releaseYear || 'N/A'}</p>
-            <p><strong>Duration:</strong> ${movie.duration || 'N/A'} mins</p>
-            <p>${movie.description || ''}</p>
-          `;
-          container.appendChild(card);
-        });
-
+        allMovies = Array.isArray(data) ? data : data.message;
+        applyFilters();
       } catch (err) {
         console.error("Fetch error:", err);
         const container = document.getElementById("moviesContainer");
@@ -142,12 +185,77 @@
       }
     }
 
+    function displayMovies(movies) {
+      const container = document.getElementById("moviesContainer");
+      container.innerHTML = "";
+
+      if (!movies || movies.length === 0) {
+        container.innerHTML = "<p>No movies found.</p>";
+        return;
+      }
+
+      movies.forEach(movie => {
+        const card = document.createElement("div");
+        card.className = "movie-card";
+        card.innerHTML = `
+          <img src="${movie.Image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="Movie Poster" />
+          <h3>${movie.movieName}</h3>
+          <p><strong>Director:</strong> ${movie.director}</p>
+        `;
+        card.addEventListener("click", () => showModal(movie));
+        container.appendChild(card);
+      });
+    }
+
+    function showModal(movie) {
+      const modal = document.getElementById("movieModal");
+      const content = document.getElementById("modalContent");
+
+      content.innerHTML = `
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <img src="${movie.Image || 'https://via.placeholder.com/300x200?text=No+Image'}" />
+        <h2>${movie.movieName}</h2>
+        <p><strong>Director:</strong> ${movie.director}</p>
+        <p><strong>Genre:</strong> ${movie.genre || 'N/A'}</p>
+        <p><strong>Year:</strong> ${movie.releaseYear || 'N/A'}</p>
+        <p><strong>Duration:</strong> ${movie.duration || 'N/A'} minutes</p>
+        <p><strong>Description:</strong> ${movie.description || 'N/A'}</p>
+      `;
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("movieModal").style.display = "none";
+    }
+
+    function applyFilters() {
+      const searchText = document.getElementById("searchInput").value.trim().toLowerCase();
+      const sortValue = document.getElementById("sortBy").value;
+
+      let filtered = [...allMovies];
+
+      if (searchText) {
+        filtered = filtered.filter(movie =>
+          movie.movieName?.toLowerCase().includes(searchText)
+        );
+      }
+
+      if (sortValue === "duration") {
+        filtered.sort((a, b) => (a.duration || 0) - (b.duration || 0));
+      } else if (sortValue === "releaseYear") {
+        filtered.sort((a, b) => (b.releaseYear || 0) - (a.releaseYear || 0));
+      }
+
+      displayMovies(filtered);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("sortBy").addEventListener("change", applyFilters);
     document.getElementById("uploadBtn").addEventListener("click", () => {
       window.location.href = "addMovie.html";
     });
-
     document.getElementById("myMoviesBtn").addEventListener("click", () => {
-      window.location.href = "myMovies.html"
+      window.location.href = "myMovies.html";
     });
 
     fetchMovies();
