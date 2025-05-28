@@ -87,7 +87,7 @@
       const authToken = localStorage.getItem("token") || "YOUR_HARDCODED_TOKEN_HERE";
 
       try {
-        const res = await fetch("http://localhost:2000/addMovie", {
+        const res = await fetch("https://movie-listing-app-mv76.onrender.com/addMovie", {
           method: "POST",
           headers: {
             "Authorization": authToken // not Bearer
